@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReciPy — Daily Expense Scanner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     AUTH SCREEN (Login / Register)
+══════════════════════════════════════════ -->
+<div id="auth-screen">
+
+  <div class="auth-container">
+
+    <!-- Logo -->
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🧾</div>
+      <div class="auth-logo-text">ReciPy</div>
+      <div class="auth-logo-sub">Daily Expense Scanner</div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="showAuthTab('login')">Login</button>
+      <button class="auth-tab" onclick="showAuthTab('register')">Register</button>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-form" class="auth-form">
+      <div class="field-group">
+        <label>Email</label>
+        <input class="field-input" type="email" id="login-email" placeholder="your@email.com">
+      </div>
+      <div class="field-group">
+        <label>Password</label>
+        <input class="field-input" type="password" id="login-password" placeholder="••••••">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="login()">
+        🔑 Login
+      </button>
+      <div class="auth-error" id="login-error"></div>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" class="auth-form" style="display:none">
+      <div class="field-group">
+        <label>Username</label>
+        <input class="field-input" type="text" id="reg-username" placeholder="your username">
+      </div>
+      <div class="field-group">
+        <label>Email</label>
+        <input class="field-input" type="email" id="reg-email" placeholder="your@email.com">
+      </div>
+      <div class="field-group">
+        <label>Password</label>
+        <input class="field-input" type="password" id="reg-password" placeholder="min 6 characters">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="register()">
+        ✨ Create Account
+      </button>
+      <div class="auth-error" id="register-error"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN APP (after login)
+══════════════════════════════════════════ -->
+<div id="app-screen" style="display:none">
+<div class="app">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🧾</div>
+      <div class="logo-text">ReciPy</div>
+      <div class="logo-sub">Daily Expense Scanner</div>
+    </div>
+
+    <!-- User Info -->
+    <div class="user-info">
+      <div class="user-avatar" id="user-avatar">Z</div>
+      <div>
+        <div class="user-name" id="user-name">User</div>
+        <div class="user-email" id="user-email">user@email.com</div>
+      </div>
+    </div>
+
+    <nav>
+      <div class="nav-item active" onclick="showPage('dashboard')">
+        <span>📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('scan')">
+        <span>📷</span> Scan Receipt
+      </div>
+      <div class="nav-item" onclick="showPage('expenses')">
+        <span>📋</span> All Expenses
+      </div>
+      <div class="nav-item" onclick="showPage('add')">
+        <span>➕</span> Add Expense
+      </div>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <button class="btn-logout" onclick="logout()">
+        🚪 Logout
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main">
+
+    <!-- ── DASHBOARD ── -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p id="current-date"></p>
+        </div>
+        <div class="welcome-badge" id="welcome-msg">👋 Welcome back!</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-label">This Month</div>
+          <div class="stat-value" id="stat-month">¥0</div>
+          <div class="stat-sub">Total spending</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">This Year</div>
+          <div class="stat-value" id="stat-year">¥0</div>
+          <div class="stat-sub">Total spending</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Expenses</div>
+          <div class="stat-value" id="stat-count">0</div>
+          <div class="stat-sub">This month</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-label">Daily Average</div>
+          <div class="stat-value" id="stat-avg">¥0</div>
+          <div class="stat-sub">This month</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3>Monthly Spending</h3>
+          <div class="bar-chart" id="monthly-chart">
+            <p class="empty-chart">No data yet</p>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>By Category</h3>
+          <div id="category-chart">
+            <p class="empty-chart">No data yet</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="recent-card">
+        <div class="recent-header">
+          <h3>Recent Expenses</h3>
+          <button class="btn btn-secondary btn-sm" onclick="showPage('expenses')">
+            View All →
+          </button>
+        </div>
+        <div id="recent-list"></div>
+      </div>
+    </div>
+
+    <!-- ── SCAN RECEIPT ── -->
+    <div id="page-scan" class="page">
+      <div class="page-header">
+        <div>
+          <h1>Scan Receipt</h1>
+          <p>Upload photo or use camera → AI reads data automatically</p>
+        </div>
+      </div>
+
+      <div class="scan-layout">
+
+        <div class="upload-section">
+
+          <!-- Camera Box -->
+          <div class="camera-box" id="cameraBox">
+            <video id="cameraVideo" autoplay playsinline></video>
+            <canvas id="cameraCanvas" style="display:none"></canvas>
+            <div class="camera-controls" id="cameraControls" style="display:none">
+              <button class="btn btn-primary" onclick="capturePhoto()">📸 Capture</button>
+              <button class="btn btn-secondary" onclick="stopCamera()">✕ Stop</button>
+            </div>
+          </div>
+
+          <!-- Upload Zone -->
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-icon">📸</div>
+            <div class="upload-title">Upload Receipt Photo</div>
+            <div class="upload-sub">Drag & drop or click to choose<br>JPG, PNG supported</div>
+            <div class="upload-btns">
+              <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                📁 Choose File
+              </button>
+              <button class="btn btn-secondary" onclick="startCamera()">
+                📷 Camera
+              </button>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)" style="display:none">
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-box" id="previewBox" style="display:none">
+            <img id="previewImg" src="" alt="Receipt">
+            <button class="btn btn-primary" onclick="scanReceipt()" style="width:100%;margin-top:12px">
+              🔍 Scan with AI
+            </button>
+            <button class="btn btn-secondary" onclick="resetScan()" style="width:100%;margin-top:8px">
+              ✕ Cancel
+            </button>
+          </div>
+
+          <!-- Scanning Animation -->
+          <div class="scanning" id="scanningAnim" style="display:none">
+            <div class="scan-icon">🤖</div>
+            <div class="scan-text">AI Reading Receipt...</div>
+            <div class="scan-bar"></div>
+            <div class="scan-sub">PaddleOCR extracting Japanese text</div>
+          </div>
+
+          <!-- Scan Tips -->
+          <div class="scan-tips">
+            <div class="tips-title">📸 Tips for better results:</div>
+            <div class="tip">✅ Good lighting</div>
+            <div class="tip">✅ Receipt flat on surface</div>
+            <div class="tip">✅ Photo taken straight above</div>
+            <div class="tip">✅ Full receipt in frame</div>
+          </div>
+
+        </div>
+
+        <!-- Result Panel -->
+        <div class="result-section">
+          <h3>📄 Extracted Data</h3>
+          <p class="result-sub">AI will fill these automatically — you can edit before saving</p>
+
+          <div id="result-empty" class="empty-state" style="padding:32px 0">
+            <div class="empty-icon">🔍</div>
+            <p>Upload a receipt to start</p>
+          </div>
+
+          <div id="result-form" style="display:none">
+            <div class="field-group">
+              <label>Shop Name</label>
+              <input class="field-input" type="text" id="field-shop" placeholder="e.g. マルゼン">
+            </div>
+            <div class="field-group">
+              <label>Date</label>
+              <input class="field-input" type="date" id="field-date">
+            </div>
+            <div class="field-group">
+              <label>Total Amount (¥)</label>
+              <input class="field-input" type="number" id="field-amount" placeholder="0">
+            </div>
+            <div class="field-group">
+              <label>Category</label>
+              <select class="field-input" id="field-category">
+                <option value="">Select category</option>
+                <option value="food">🍔 Food & Drinks</option>
+                <option value="transport">🚃 Transport</option>
+                <option value="shopping">🛍️ Shopping</option>
+                <option value="health">💊 Health</option>
+                <option value="entertainment">🎮 Entertainment</option>
+                <option value="other">📦 Other</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Notes</label>
+              <input class="field-input" type="text" id="field-notes" placeholder="Optional notes">
+            </div>
+            <div class="field-group">
+              <label>Raw Text from AI</label>
+              <textarea class="field-input" id="field-raw" rows="5" readonly></textarea>
+            </div>
+            <div class="form-btns">
+              <button class="btn btn-primary" onclick="saveScannedExpense()" style="flex:1">
+                💾 Save Expense
+              </button>
+              <button class="btn btn-secondary" onclick="resetScan()">
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── ALL EXPENSES ── -->
+    <div id="page-expenses" class="page">
+      <div class="page-header">
+        <div>
+          <h1>All Expenses</h1>
+          <p id="expense-count-label">Loading...</p>
+        </div>
+        <button class="btn btn-primary" onclick="showPage('add')">+ Add New</button>
+      </div>
+
+      <div class="filters">
+        <button class="filter active" onclick="filterBy('all', this)">All</button>
+        <button class="filter" onclick="filterBy('food', this)">🍔 Food</button>
+        <button class="filter" onclick="filterBy('transport', this)">🚃 Transport</button>
+        <button class="filter" onclick="filterBy('shopping', this)">🛍️ Shopping</button>
+        <button class="filter" onclick="filterBy('health', this)">💊 Health</button>
+        <button class="filter" onclick="filterBy('entertainment', this)">🎮 Entertainment</button>
+        <button class="filter" onclick="filterBy('other', this)">📦 Other</button>
+      </div>
+
+      <div class="expense-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Shop</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="expense-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── ADD EXPENSE ── -->
+    <div id="page-add" class="page">
+      <div class="page-header">
+        <div>
+          <h1>Add Expense</h1>
+          <p>Add expense manually without scanning</p>
+        </div>
+      </div>
+
+      <div class="add-form">
+        <div class="field-group">
+          <label>Shop Name</label>
+          <input class="field-input" type="text" id="add-shop" placeholder="e.g. McDonald's">
+        </div>
+        <div class="field-group">
+          <label>Date</label>
+          <input class="field-input" type="date" id="add-date">
+        </div>
+        <div class="field-group">
+          <label>Total Amount (¥)</label>
+          <input class="field-input" type="number" id="add-amount" placeholder="0">
+        </div>
+        <div class="field-group">
+          <label>Category</label>
+          <select class="field-input" id="add-category">
+            <option value="">Select category</option>
+            <option value="food">🍔 Food & Drinks</option>
+            <option value="transport">🚃 Transport</option>
+            <option value="shopping">🛍️ Shopping</option>
+            <option value="health">💊 Health</option>
+            <option value="entertainment">🎮 Entertainment</option>
+            <option value="other">📦 Other</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Notes</label>
+          <input class="field-input" type="text" id="add-notes" placeholder="Optional notes">
+        </div>
+        <div class="form-btns">
+          <button class="btn btn-primary" onclick="addExpense()">💾 Save Expense</button>
+          <button class="btn btn-secondary" onclick="clearAddForm()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -64,17 +64,7 @@ manage expenses from a dashboard.
    pip install -r requirements.txt
    ```
 
-4. (Optional) Create a `.env` file to override the defaults:
-
-   ```dotenv
-   SECRET_KEY=replace-with-a-long-random-value
-   DATABASE_URL=sqlite:///recipy.db
-   DEBUG=False
-   ```
-
-   Do not commit `.env` files or production secrets.
-
-5. Start the development server:
+4. Start the development server:
 
    ```bash
    python app.py
